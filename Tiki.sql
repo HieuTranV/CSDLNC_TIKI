@@ -9,7 +9,7 @@ GO
 USE QL_BHOL
 
 CREATE TABLE Customer(
-	Id_Customer INT,
+	Id_Customer INT IDENTITY(1,1),
 	Customer_Email CHAR(30),
 	Customer_Phone CHAR(10),
 	Customer_Password CHAR(25)
@@ -28,7 +28,7 @@ CREATE TABLE CustomerInfo (
 
 
 CREATE TABLE Supplier (
-	Id_Supplier INT,
+	Id_Supplier INT IDENTITY(1,1),
 	Supplier_Name NVARCHAR(255),
 	Supplier_Phone CHAR(11),
 	Supplier_Address CHAR(30),
@@ -40,14 +40,14 @@ CREATE TABLE Supplier (
 
 
 CREATE TABLE TypeGood (
-	Id_TG INT,
+	Id_TG INT IDENTITY(1,1),
 	TG_Name NVARCHAR(30)
 	CONSTRAINT PK_TG
 	PRIMARY KEY (Id_TG)
 )
 
 CREATE TABLE GoodDetail (
-	Id_GD INT,
+	Id_GD INT IDENTITY(1,1),
 	GD_Name NVARCHAR(255),
 	GD_Color NVARCHAR(30),
 	GD_Size NVARCHAR(30),
@@ -69,7 +69,7 @@ CREATE TABLE GoodDetail (
 
 
 CREATE TABLE GoodPresented(
-	Id_Good INT,
+	Id_Good INT IDENTITY(1,1),
 	GD_Name NVARCHAR(255),
 	GD_Price MONEY,
 	Id_Supplier INT,
@@ -79,7 +79,7 @@ CREATE TABLE GoodPresented(
 )
 
 CREATE TABLE Warehouse(
-	Id_WH INT,
+	Id_WH INT IDENTITY(1,1),
 	WH_Name NVARCHAR(255),
 	WH_Address NVARCHAR(255),
 	WH_Hotline CHAR(11)
@@ -88,7 +88,7 @@ CREATE TABLE Warehouse(
 )
 
 CREATE TABLE Good_Warehouse(
-	Id_Good_Warehouse INT,
+	Id_Good_Warehouse INT IDENTITY(1,1),
 	Id_GD INT,
 	Id_WH INT,
 	Supplier_Name CHAR(30),
@@ -99,7 +99,7 @@ CREATE TABLE Good_Warehouse(
 
 
 CREATE TABLE Good_Cart(
-	Id_Good_Cart INT,
+	Id_Good_Cart INT IDENTITY(1,1),
 	Id_GD INT,
 	Id_Customer INT,
 	GC_Number INT,
@@ -110,7 +110,7 @@ CREATE TABLE Good_Cart(
 
 
 CREATE TABLE TypePay(
-	Id_TP INT,
+	Id_TP INT IDENTITY(1,1),
 	TP_Name NVARCHAR(128)
 	CONSTRAINT PK_TP
 	PRIMARY KEY (Id_TP)
@@ -118,14 +118,14 @@ CREATE TABLE TypePay(
 
 
 CREATE TABLE StatusInvoice(
-	Id_StatusInvoice INT,
+	Id_StatusInvoice INT IDENTITY(1,1),
 	StatusInvoice_Name CHAR(30)
 	CONSTRAINT PK_SI
 	PRIMARY KEY (Id_StatusInvoice)
 )
 
 CREATE TABLE DeliveryInformation(
-	Id_DI INT,
+	Id_DI INT IDENTITY(1,1),
 	Id_Customer INT,
 	DI_PhoneNumber CHAR(11),
 	DI_Name CHAR(30),
@@ -138,14 +138,14 @@ CREATE TABLE DeliveryInformation(
 )
 
 CREATE TABLE TypeVoucher(
-	Id_TV INT,
+	Id_TV INT IDENTITY(1,1),
 	TV_Name NVARCHAR(255) 
 	CONSTRAINT PK_TV
 	PRIMARY KEY (Id_TV)
 )
 
 CREATE TABLE Voucher(
-	Id_Voucher INT,
+	Id_Voucher INT IDENTITY(1,1),
 	Voucher_Name NVARCHAR(255),
 	Voucher_StartDate DATE,
 	Voucher_EndDate DATE,
@@ -169,7 +169,7 @@ CREATE TABLE PersonalVoucher(
 )
 
 CREATE TABLE Invoice(
-	Id_Invoice INT,
+	Id_Invoice INT IDENTITY(1,1),
 	Invoice_InvoiceDate DATE,
 	Invoice_TotalPrice MONEY,
 	Id_StatusInvoice INT,
@@ -194,7 +194,7 @@ CREATE TABLE Good_Invoice(
 )
 
 CREATE TABLE DeliveryOrder(
-	Id_DO INT,
+	Id_DO INT IDENTITY(1,1),
 	Id_Invoice INT,
 	DO_DateDelivery DATE,
 	CONSTRAINT PK_DeliveryOrder
