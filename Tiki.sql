@@ -19,7 +19,7 @@ CREATE TABLE Customer(
 
 CREATE TABLE CustomerInfo (
 	Id_Customer INT,
-	Customer_Name CHAR(30),
+	Customer_Name NVARCHAR(255),
 	Customer_Gender BIT,
 	Customer_Birthday DATE
 	CONSTRAINT PK_CI
@@ -29,7 +29,7 @@ CREATE TABLE CustomerInfo (
 
 CREATE TABLE Supplier (
 	Id_Supplier INT,
-	Supplier_Name CHAR(30),
+	Supplier_Name NVARCHAR(255),
 	Supplier_Phone CHAR(11),
 	Supplier_Address CHAR(30),
 	Supplier_Website CHAR(30),
@@ -41,7 +41,7 @@ CREATE TABLE Supplier (
 
 CREATE TABLE TypeGood (
 	Id_TG INT,
-	TG_Name CHAR(30)
+	TG_Name NVARCHAR(30)
 	CONSTRAINT PK_TG
 	PRIMARY KEY (Id_TG)
 )
@@ -54,10 +54,15 @@ CREATE TABLE GoodDetail (
 	GD_Price MONEY,
 	GD_Remain INT,
 	GD_Sold INT,
+	GD_Discount_Rate FLOAT,
+	GD_Rating_AVG FLOAT,
+	Thumbnail_URL NTEXT,
+	Thumbnail_width FLOAT,
+	Thumbnail_height FLOAT, 
 	Id_Good INT,
 	Id_TG INT,
 	Id_Supplier INT,
-	Supplier_Name CHAR(30)
+	Supplier_Name NVARCHAR(255)
 	CONSTRAINT PK_GD
 	PRIMARY KEY (Id_GD)
 )
@@ -65,18 +70,18 @@ CREATE TABLE GoodDetail (
 
 CREATE TABLE GoodPresented(
 	Id_Good INT,
-	GD_Name CHAR(30),
+	GD_Name NVARCHAR(255),
 	GD_Price MONEY,
 	Id_Supplier INT,
-	Supplier_Name CHAR(30)
+	Supplier_Name NVARCHAR(255)
 	CONSTRAINT PK_GP
 	PRIMARY KEY (Id_Good)
 )
 
 CREATE TABLE Warehouse(
 	Id_WH INT,
-	WH_Name CHAR(30),
-	WH_Address CHAR(30),
+	WH_Name NVARCHAR(255),
+	WH_Address NVARCHAR(255),
 	WH_Hotline CHAR(11)
 	CONSTRAINT PK_WH
 	PRIMARY KEY (Id_WH)
@@ -106,7 +111,7 @@ CREATE TABLE Good_Cart(
 
 CREATE TABLE TypePay(
 	Id_TP INT,
-	TP_Name CHAR(30)
+	TP_Name NVARCHAR(128)
 	CONSTRAINT PK_TP
 	PRIMARY KEY (Id_TP)
 )
@@ -134,14 +139,14 @@ CREATE TABLE DeliveryInformation(
 
 CREATE TABLE TypeVoucher(
 	Id_TV INT,
-	TV_Name CHAR(30) 
+	TV_Name NVARCHAR(255) 
 	CONSTRAINT PK_TV
 	PRIMARY KEY (Id_TV)
 )
 
 CREATE TABLE Voucher(
 	Id_Voucher INT,
-	Voucher_Name CHAR(30),
+	Voucher_Name NVARCHAR(255),
 	Voucher_StartDate DATE,
 	Voucher_EndDate DATE,
 	Id_TV INT
@@ -329,3 +334,4 @@ ADD CONSTRAINT FK_GoodDelivery_DO
 	REFERENCES dbo.DeliveryOrder
 
 
+Alter table GoodDetail alter column Supplier_Name NVARCHAR(255)
