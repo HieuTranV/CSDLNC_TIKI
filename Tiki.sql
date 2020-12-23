@@ -18,7 +18,7 @@ CREATE TABLE Customer(
 )
 
 CREATE TABLE CustomerInfo (
-	Id_Customer INT IDENTITY(1,1),
+	Id_Customer INT,
 	Customer_Name NVARCHAR(255),
 	Customer_Gender BIT,
 	Customer_Birthday DATE
@@ -167,6 +167,22 @@ CREATE TABLE PersonalVoucher(
 	VoucherEachPerson INT
 	CONSTRAINT PK_PersonalVoucher
 	PRIMARY KEY (Id_PersonalVoucher)
+)
+
+CREATE TABLE Customer_PersonalVoucher(
+	Id_Customer INT,
+	Id_PersonalVoucher INT,
+	Voucher_Remain INT
+	CONSTRAINT PK_C_PersonalVoucher
+	PRIMARY KEY (Id_Customer, Id_PersonalVoucher)
+)
+
+
+CREATE TABLE Customer_PublicVoucher(
+	Id_Customer INT,
+	Id_PublicVoucher INT
+	CONSTRAINT PK_C_PublicVoucher
+	PRIMARY KEY (Id_Customer, Id_PublicVoucher)
 )
 
 CREATE TABLE Invoice(
@@ -338,6 +354,27 @@ ALTER TABLE dbo.Good_Delivery
 ADD CONSTRAINT FK_GoodDelivery_Invoice
 	FOREIGN KEY (Id_Invoice)
 	REFERENCES dbo.Invoice
+
+ALTER TABLE dbo.Customer_PersonalVoucher
+ADD CONSTRAINT FK_CPersonalV_PersonalVoucher
+	FOREIGN KEY (Id_PersonalVoucher)
+	REFERENCES dbo.PersonalVoucher
+	
+ALTER TABLE dbo.Customer_PersonalVoucher
+ADD CONSTRAINT FK_CPersonalV_Customer
+	FOREIGN KEY (Id_Customer)
+	REFERENCES dbo.Customer
+
+	
+ALTER TABLE dbo.Customer_PublicVoucher
+ADD CONSTRAINT FK_CPersonalV_PublicVoucher
+	FOREIGN KEY (Id_PublicVoucher)
+	REFERENCES dbo.PublicVoucher
+	
+ALTER TABLE dbo.Customer_PublicVoucher
+ADD CONSTRAINT FK_CPublicV_Customer
+	FOREIGN KEY (Id_Customer)
+	REFERENCES dbo.Customer
 
 Alter table GoodDetail alter column Supplier_Name NVARCHAR(255)
 
