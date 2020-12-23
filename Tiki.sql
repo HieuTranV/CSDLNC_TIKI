@@ -10,8 +10,8 @@ USE QL_BHOL
 
 CREATE TABLE Customer(
 	Id_Customer INT IDENTITY(1,1),
-	Customer_Email CHAR(30),
-	Customer_Phone CHAR(10),
+	Customer_Email CHAR(30) UNIQUE,
+	Customer_Phone CHAR(10) UNIQUE,
 	Customer_Password CHAR(25)
 	CONSTRAINT PK_C
 	PRIMARY KEY (Id_Customer)
