@@ -10,9 +10,9 @@ USE QL_BHOL
 
 CREATE TABLE Customer(
 	Id_Customer INT IDENTITY(1,1),
-	Customer_Email CHAR(30) UNIQUE,
-	Customer_Phone CHAR(10) UNIQUE,
-	Customer_Password CHAR(25)
+	Customer_Email VARCHAR(30) UNIQUE,
+	Customer_Phone VARCHAR(10) UNIQUE,
+	Customer_Password VARCHAR(25)
 	CONSTRAINT PK_C
 	PRIMARY KEY (Id_Customer)
 )
@@ -63,12 +63,12 @@ CREATE TABLE GoodDetail (
 	Id_Good INT,
 	Id_TG INT,
 	Id_Supplier INT,
-	Supplier_Name NVARCHAR(255)
+	Supplier_Name NVARCHAR(255),
+	Specification_Type NVARCHAR(200)
 	CONSTRAINT PK_GD
 	PRIMARY KEY (Id_GD)
 )
 
-ALTER TABLE dbo.GoodDetail ADD Specification_Type NVARCHAR(200)
 CREATE TABLE GoodPresented(
 	Id_Good INT IDENTITY(1, 1),
 	GD_Name NVARCHAR(255),
@@ -381,7 +381,6 @@ ADD CONSTRAINT FK_CPublicV_Customer
 	REFERENCES dbo.Customer
 GO
 
-
 INSERT INTO dbo.TypePay
 (
     TP_Name
@@ -445,13 +444,6 @@ BEGIN
 DEALLOCATE CURSOR1
 END
 GO
-DELETE FROM dbo.TypeGood
-EXEC gen_typeGood 
-SELECT * FROM dbo.TypeGood
-SELECT * FROM dbo.GoodPresented WHERE Product_Group Like N'%Bách hóa%'
-SELECT * FROM dbo.Supplier
-SELECT * FROM dbo.CustomerInfo
-SELECT * FROM dbo.TypeGood
 insert into Customer (Customer_Email, Customer_Phone, Customer_Password) values ('tosbaldstone0@linkedin.com', '5332003866', 'DKuv9Y7TpKc');
 insert into Customer (Customer_Email, Customer_Phone, Customer_Password) values ('rmeadus1@domainmarket.com', '7759521704', 'opIGRI6z');
 insert into Customer (Customer_Email, Customer_Phone, Customer_Password) values ('msimione2@altervista.org', '2663804433', 'r7WJBNDk');
@@ -6463,10 +6455,7 @@ AS
 RETURN 
 SELECT dbo.GoodPresented.*, Id_TG FROM dbo.TypeGood JOIN dbo.GoodPresented ON Product_Group LIKE ('%'+dbo.TypeGood.TG_Name+'%')
 
-
-
-
-SELECT * FROM goodtable()
+go
 
 DROP PROCEDURE IF EXISTS gen_gooddetail
 GO
@@ -6555,13 +6544,7 @@ BEGIN
 DEALLOCATE cursor1
 END
 
-EXEC dbo.gen_gooddetail
-SELECT * FROM dbo.GoodPresented
-SELECT * FROM dbo.GoodDetail
 
-
-
-SELECT * FROM dbo.TypeGood
 
 DROP  PROCEDURE IF EXISTS createTG
 go
@@ -6618,14 +6601,30 @@ BEGIN
 	DEALLOCATE cursor2
 END
 
+go
+
+
+CREATE PROCEDURE RemoveUnusedData
+AS
+BEGIN
+	DELETE FROM dbo.GoodPresented WHERE Product_Group LIKE N'%Thời trang%'
+	DELETE FROM dbo.GoodPresented WHERE Product_Group LIKE N'%Giày%'
+	DELETE FROM dbo.GoodPresented WHERE Product_Group LIKE N'%Balo%'
+	DELETE FROM dbo.GoodPresented WHERE Product_Group LIKE N'%Đồng hồ%'
+	DELETE FROM dbo.GoodPresented WHERE Product_Group LIKE N'%Túi%'
+END
+go
+EXEC RemoveUnusedData
+
+GO
+EXEC dbo.gen_typeGood
+go
 EXEC createTG
-
-SELECT * FROM dbo.TypeGood
-
+go
 UPDATE dbo.TypeGood
+
 SET TG_URL='dien-thoai-may-tinh-bang'
 WHERE Id_TG = 3
-
 
 UPDATE dbo.TypeGood
 SET TG_URL='tivi-thiet-bi-nghe-nhin'
@@ -6672,5 +6671,6 @@ WHERE Id_TG = 11
 UPDATE dbo.TypeGood
 SET TG_URL='voucher-dich-vu'
 WHERE Id_TG = 15
-SELECT * FROM dbo.GoodDetail
-ORDER BY GD_Name
+go
+EXEC dbo.gen_gooddetail
+go
