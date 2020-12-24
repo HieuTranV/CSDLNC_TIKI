@@ -1,3 +1,4 @@
+
 USE QL_BHOL
 GO
 /****** Object:  Table [dbo].[District]    Script Date: 1/9/2017 8:50:03 AM ******/
@@ -7,7 +8,7 @@ SET QUOTED_IDENTIFIER ON
 GO
 CREATE TABLE [dbo].[District](
 	[Id] [int] IDENTITY(1,1) NOT NULL,
-	[Name] [nvarchar](250) NULL,
+	[Name] [nvarchar](50) NULL,
 	[Type] [nvarchar](50) NULL,
 	[LatiLongTude] [nvarchar](50) NULL,
 	[ProvinceId] [int] NOT NULL,
@@ -28,7 +29,7 @@ SET QUOTED_IDENTIFIER ON
 GO
 CREATE TABLE [dbo].[Province](
 	[Id] [int] IDENTITY(1,1) NOT NULL,
-	[Name] [nvarchar](250) NOT NULL,
+	[Name] [nvarchar](50) NOT NULL,
 	[Type] [nvarchar](20) NULL,
 	[TelephoneCode] [int] NULL,
 	[ZipCode] [nvarchar](20) NULL,
