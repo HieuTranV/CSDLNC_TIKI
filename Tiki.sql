@@ -380,7 +380,7 @@ ADD CONSTRAINT FK_CPublicV_Customer
 	FOREIGN KEY (Id_Customer)
 	REFERENCES dbo.Customer
 GO
-
+------------------------------------------------------------
 INSERT INTO dbo.TypePay
 (
     TP_Name
@@ -6615,7 +6615,7 @@ BEGIN
 END
 go
 EXEC RemoveUnusedData
-
+--------------------------------------------------------------------------------
 GO
 EXEC dbo.gen_typeGood
 go
