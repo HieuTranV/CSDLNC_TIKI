@@ -68,7 +68,7 @@ CREATE TABLE GoodDetail (
 	PRIMARY KEY (Id_GD)
 )
 
-
+ALTER TABLE dbo.GoodDetail ADD Specification_Type NVARCHAR(200)
 CREATE TABLE GoodPresented(
 	Id_Good INT IDENTITY(1, 1),
 	GD_Name NVARCHAR(255),
@@ -444,10 +444,11 @@ BEGIN
 	CLOSE CURSOR1              -- Đóng Cursor
 DEALLOCATE CURSOR1
 END
-go
+GO
+DELETE FROM dbo.TypeGood
 EXEC gen_typeGood 
 SELECT * FROM dbo.TypeGood
-DELETE FROM dbo.GoodPresented WHERE Product_Group Like N'%Thời trang%'
+SELECT * FROM dbo.GoodPresented WHERE Product_Group Like N'%Bách hóa%'
 SELECT * FROM dbo.Supplier
 SELECT * FROM dbo.CustomerInfo
 SELECT * FROM dbo.TypeGood
@@ -6460,7 +6461,7 @@ CREATE FUNCTION goodtable()
 RETURNS table
 AS
 RETURN 
-SELECT dbo.GoodPresented.*, Id_TG FROM dbo.TypeGood JOIN dbo.GoodPresented ON TG_Name = Product_Group
+SELECT dbo.GoodPresented.*, Id_TG FROM dbo.TypeGood JOIN dbo.GoodPresented ON Product_Group LIKE ('%'+dbo.TypeGood.TG_Name+'%')
 
 
 
@@ -6472,18 +6473,6 @@ GO
 CREATE PROCEDURE gen_gooddetail
 AS
 BEGIN
-	DECLARE @table TABLE(
-	Id_Good INT,
-	GD_Name NVARCHAR(255),
-	GD_Price MONEY,
-	GD_Discount_Rate FLOAT,
-	GD_Rating_AVG FLOAT,
-	Thumbnail_URL NVARCHAR(MAX),
-	Id_Supplier INT,
-	Supplier_Name NVARCHAR(255),
-	Product_Group NVARCHAR(255),
-	Id_TG INT
-	)
 	DECLARE @Id_Good INT
 	DECLARE @GD_Name NVARCHAR(255)
 	DECLARE @GD_Price MONEY
@@ -6499,8 +6488,8 @@ BEGIN
 	DECLARE @color NVARCHAR(10)
 	DECLARE @size NCHAR(4)
 	DECLARE @count INT 
-	SET @table = (SELECT * FROM dbo.goodtable())
-	DECLARE cursor1 CURSOR FOR SELECT * FROM @table
+
+	DECLARE cursor1 CURSOR FOR SELECT * FROM dbo.goodtable()
 	OPEN cursor1
 	FETCH NEXT FROM cursor1 INTO  @Id_Good, @GD_Name, @GD_Price,
 	@GD_Discount_Rate, @GD_Rating_AVG, @Thumbnail_URL, @Id_Supplier, 
@@ -6531,12 +6520,13 @@ BEGIN
 			    Id_Good,
 			    Id_TG,
 			    Id_Supplier,
-			    Supplier_Name
+			    Supplier_Name,
+				specification_Type
 			)
 			VALUES
 			(   @GD_Name,  -- GD_Name - nvarchar(255)
-			    @color,  -- GD_Color - nvarchar(30)
-			    @size,  -- GD_Size - nvarchar(30)
+			    @color,  -- GD_Color - nvarchar(10)
+			    @size,  -- GD_Size - nchar(4)
 			    @GD_Price, -- GD_Price - money
 			    @remain,    -- GD_Remain - int
 			    @sold,    -- GD_Sold - int
@@ -6548,7 +6538,8 @@ BEGIN
 			    @Id_Good,    -- Id_Good - int
 			    @Id_TG,    -- Id_TG - int
 			    @Id_Supplier,    -- Id_Supplier - int
-			    @Supplier_Name   -- Supplier_Name - nvarchar(255)
+			    @Supplier_Name,   -- Supplier_Name - nvarchar(255)
+				@Product_Group
 			    )			
 
 			SET @size = CAST((CAST(@size AS FLOAT) +FLOOR(RAND()*2 + 2)/2) AS NVARCHAR(4))
@@ -6563,12 +6554,17 @@ BEGIN
 	CLOSE cursor1              -- Đóng Cursor
 DEALLOCATE cursor1
 END
+
+EXEC dbo.gen_gooddetail
 SELECT * FROM dbo.GoodPresented
 SELECT * FROM dbo.GoodDetail
 
 
 
 SELECT * FROM dbo.TypeGood
+
+DROP  PROCEDURE IF EXISTS createTG
+go
 CREATE PROCEDURE createTG
 AS
 BEGIN
@@ -6577,8 +6573,9 @@ BEGIN
 	TG_Name NVARCHAR(255)
 	)
 	DECLARE @id INT
-	DECLARE @name NVARCHAR(255)
-	DECLARE cursor1 CURSOR FOR SELECT * FROM dbo.TypeGood
+	DECLARE @name NVARCHAR(100)
+	DECLARE @URL NCHAR(50)
+	DECLARE cursor1 CURSOR FOR SELECT Id_TG,TG_Name FROM dbo.TypeGood
 	OPEN cursor1
 	FETCH NEXT FROM cursor1 INTO  @id, @name
 	WHILE @@FETCH_STATUS = 0
@@ -6600,8 +6597,8 @@ BEGIN
 
 
 	DELETE FROM dbo.TypeGood
-
-	SET @id = 1
+	DECLARE  @id1 INT
+	SET @id1 = 1
 	DECLARE cursor2 CURSOR FOR SELECT TG_Name FROM @table GROUP BY TG_Name
 	OPEN cursor2
 	FETCH NEXT FROM cursor2 INTO @name
@@ -6612,9 +6609,9 @@ BEGIN
 		    TG_Name
 		)
 		VALUES
-		(@id,@name-- TG_Name - nvarchar(255)
+		(@id1,@name-- TG_Name - nvarchar(255)
 		)
-		SET @id = @id + 1
+		SET @id1 = @id1 + 1
 		FETCH NEXT FROM cursor2 INTO @name
     END
     CLOSE cursor2             -- Đóng Cursor
@@ -6624,3 +6621,56 @@ END
 EXEC createTG
 
 SELECT * FROM dbo.TypeGood
+
+UPDATE dbo.TypeGood
+SET TG_URL='dien-thoai-may-tinh-bang'
+WHERE Id_TG = 3
+
+
+UPDATE dbo.TypeGood
+SET TG_URL='tivi-thiet-bi-nghe-nhin'
+WHERE Id_TG = 4
+
+UPDATE dbo.TypeGood
+SET TG_URL='thiet-bi-kts-phu-kien-so'
+WHERE Id_TG = 14
+
+UPDATE dbo.TypeGood
+SET TG_URL='laptop-may-vi-tinh-linh-kien'
+WHERE Id_TG = 8
+UPDATE dbo.TypeGood
+SET TG_URL='may-anh'
+WHERE Id_TG = 9
+UPDATE dbo.TypeGood
+SET TG_URL='dien-gia-dung'
+WHERE Id_TG = 2
+UPDATE dbo.TypeGood
+SET TG_URL='nha-cua-doi-song'
+WHERE Id_TG = 10
+UPDATE dbo.TypeGood
+SET TG_URL='bach-hoa-online'
+WHERE Id_TG = 1
+UPDATE dbo.TypeGood
+SET TG_URL='do-choi-me-be'
+WHERE Id_TG = 5
+UPDATE dbo.TypeGood
+SET TG_URL='lam-dep-suc-khoe'
+WHERE Id_TG = 7
+UPDATE dbo.TypeGood
+SET TG_URL='the-thao'
+WHERE Id_TG = 13
+UPDATE dbo.TypeGood
+SET TG_URL='o-to-xe-may-xe-dap'
+WHERE Id_TG = 12
+UPDATE dbo.TypeGood
+SET TG_URL='hang-quoc-te'
+WHERE Id_TG = 6
+UPDATE dbo.TypeGood
+SET TG_URL='nha-sach-tiki'
+WHERE Id_TG = 11
+
+UPDATE dbo.TypeGood
+SET TG_URL='voucher-dich-vu'
+WHERE Id_TG = 15
+SELECT * FROM dbo.GoodDetail
+ORDER BY GD_Name
