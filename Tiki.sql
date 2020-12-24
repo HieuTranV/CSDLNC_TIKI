@@ -1,5 +1,5 @@
 ﻿USE master
-go
+GO
 IF DB_ID('QL_BHOL') IS NOT NULL
 	DROP DATABASE QL_BHOL
 
@@ -40,8 +40,9 @@ CREATE TABLE Supplier (
 
 
 CREATE TABLE TypeGood (
-	Id_TG INT IDENTITY(1,1),
-	TG_Name NVARCHAR(255)
+	Id_TG INT,
+	TG_Name NVARCHAR(100),
+	TG_URL VARCHAR(50)
 	CONSTRAINT PK_TG
 	PRIMARY KEY (Id_TG)
 )
@@ -49,8 +50,8 @@ CREATE TABLE TypeGood (
 CREATE TABLE GoodDetail (
 	Id_GD INT IDENTITY(1,1),
 	GD_Name NVARCHAR(255),
-	GD_Color NVARCHAR(30),
-	GD_Size NVARCHAR(30),
+	GD_Color NVARCHAR(10),
+	GD_Size NCHAR(4),
 	GD_Price MONEY,
 	GD_Remain INT,
 	GD_Sold INT,
@@ -287,7 +288,6 @@ ADD CONSTRAINT FK_PublicVoucher_Voucher
 	FOREIGN KEY (Id_PublicVoucher)
 	REFERENCES dbo.Voucher
 
-
 ALTER TABLE dbo.PersonalVoucher
 ADD CONSTRAINT FK_PersonalVoucher_Voucher
 	FOREIGN KEY (Id_PersonalVoucher)
@@ -381,6 +381,7 @@ ADD CONSTRAINT FK_CPublicV_Customer
 	REFERENCES dbo.Customer
 GO
 
+
 INSERT INTO dbo.TypePay
 (
     TP_Name
@@ -417,14 +418,14 @@ VALUES
 ('Kho10', 'HCM', '0915253231'),
 ('Kho11', 'HCM', '0915253232')
 
-
-SELECT Product_group FROM dbo.GoodPresented
-GROUP BY Product_group 
-
+DROP PROCEDURE IF EXISTS dbo.gen_typeGood
+go
 CREATE PROCEDURE gen_typeGood 
 AS
 BEGIN
 	DECLARE @typeName NVARCHAR(255)
+	DECLARE @id INT
+	SET @id = 1
 	DECLARE CURSOR1 CURSOR FOR SELECT Product_group FROM dbo.GoodPresented GROUP BY Product_group
 	OPEN CURSOR1
 
@@ -432,12 +433,12 @@ BEGIN
 	WHILE @@FETCH_STATUS = 0
 	BEGIN
 		INSERT INTO dbo.TypeGood
-		(
+		(Id_TG,
 		    TG_Name
 		)
 		VALUES
-		(@typeName)
-
+		(@id, @typeName)
+		SET @id = @id +1
 		FETCH NEXT FROM CURSOR1 INTO @typeName
 	END
 	CLOSE CURSOR1              -- Đóng Cursor
@@ -446,10 +447,10 @@ END
 go
 EXEC gen_typeGood 
 SELECT * FROM dbo.TypeGood
-SELECT * FROM dbo.GoodPresented
+DELETE FROM dbo.GoodPresented WHERE Product_Group Like N'%Thời trang%'
 SELECT * FROM dbo.Supplier
 SELECT * FROM dbo.CustomerInfo
-
+SELECT * FROM dbo.TypeGood
 insert into Customer (Customer_Email, Customer_Phone, Customer_Password) values ('tosbaldstone0@linkedin.com', '5332003866', 'DKuv9Y7TpKc');
 insert into Customer (Customer_Email, Customer_Phone, Customer_Password) values ('rmeadus1@domainmarket.com', '7759521704', 'opIGRI6z');
 insert into Customer (Customer_Email, Customer_Phone, Customer_Password) values ('msimione2@altervista.org', '2663804433', 'r7WJBNDk');
@@ -6452,3 +6453,174 @@ insert into CustomerInfo (Id_Customer, Customer_Name, Customer_Gender, Customer_
 insert into CustomerInfo (Id_Customer, Customer_Name, Customer_Gender, Customer_Birthday) values (2999, 'Morty Benoist', 0, '4/6/1974');
 insert into CustomerInfo (Id_Customer, Customer_Name, Customer_Gender, Customer_Birthday) values (3000, 'Mal Methuen', 1, '5/9/1979');
 
+
+DROP FUNCTION IF EXISTS goodtable
+go
+CREATE FUNCTION goodtable()
+RETURNS table
+AS
+RETURN 
+SELECT dbo.GoodPresented.*, Id_TG FROM dbo.TypeGood JOIN dbo.GoodPresented ON TG_Name = Product_Group
+
+
+
+
+SELECT * FROM goodtable()
+
+DROP PROCEDURE IF EXISTS gen_gooddetail
+GO
+CREATE PROCEDURE gen_gooddetail
+AS
+BEGIN
+	DECLARE @table TABLE(
+	Id_Good INT,
+	GD_Name NVARCHAR(255),
+	GD_Price MONEY,
+	GD_Discount_Rate FLOAT,
+	GD_Rating_AVG FLOAT,
+	Thumbnail_URL NVARCHAR(MAX),
+	Id_Supplier INT,
+	Supplier_Name NVARCHAR(255),
+	Product_Group NVARCHAR(255),
+	Id_TG INT
+	)
+	DECLARE @Id_Good INT
+	DECLARE @GD_Name NVARCHAR(255)
+	DECLARE @GD_Price MONEY
+	DECLARE @GD_Discount_Rate FLOAT
+	DECLARE @GD_Rating_AVG FLOAT
+	DECLARE @Thumbnail_URL NVARCHAR(MAX)
+	DECLARE @Id_Supplier INT
+	DECLARE @Supplier_Name NVARCHAR(255)
+	DECLARE @Product_Group NVARCHAR(255)
+	DECLARE @Id_TG INT
+	DECLARE @remain INT
+	DECLARE @sold INT
+	DECLARE @color NVARCHAR(10)
+	DECLARE @size NCHAR(4)
+	DECLARE @count INT 
+	SET @table = (SELECT * FROM dbo.goodtable())
+	DECLARE cursor1 CURSOR FOR SELECT * FROM @table
+	OPEN cursor1
+	FETCH NEXT FROM cursor1 INTO  @Id_Good, @GD_Name, @GD_Price,
+	@GD_Discount_Rate, @GD_Rating_AVG, @Thumbnail_URL, @Id_Supplier, 
+	@Supplier_Name, @Product_Group, @Id_TG
+	WHILE @@FETCH_STATUS = 0
+	BEGIN
+		SET @count = 0;
+		SET @size = CAST(FLOOR(RAND()*10 + 76)/2 AS nvarchar(4))
+		SET @color = N'Vàng'
+		WHILE @count < 2 
+		BEGIN
+			SET @remain = FLOOR(RAND()*100 + 100)
+			SET @sold = FLOOR(RAND()*100 + 300)
+
+			INSERT INTO dbo.GoodDetail
+			(
+			    GD_Name,
+			    GD_Color,
+			    GD_Size,
+			    GD_Price,
+			    GD_Remain,
+			    GD_Sold,
+			    GD_Discount_Rate,
+			    GD_Rating_AVG,
+			    Thumbnail_URL,
+			    Thumbnail_width,
+			    Thumbnail_height,
+			    Id_Good,
+			    Id_TG,
+			    Id_Supplier,
+			    Supplier_Name
+			)
+			VALUES
+			(   @GD_Name,  -- GD_Name - nvarchar(255)
+			    @color,  -- GD_Color - nvarchar(30)
+			    @size,  -- GD_Size - nvarchar(30)
+			    @GD_Price, -- GD_Price - money
+			    @remain,    -- GD_Remain - int
+			    @sold,    -- GD_Sold - int
+			    @GD_Discount_Rate,  -- GD_Discount_Rate - float
+			    @GD_Rating_AVG,  -- GD_Rating_AVG - float
+			    @Thumbnail_URL,  -- Thumbnail_URL - ntext
+			    280,  -- Thumbnail_width - float
+			    280,  -- Thumbnail_height - float
+			    @Id_Good,    -- Id_Good - int
+			    @Id_TG,    -- Id_TG - int
+			    @Id_Supplier,    -- Id_Supplier - int
+			    @Supplier_Name   -- Supplier_Name - nvarchar(255)
+			    )			
+
+			SET @size = CAST((CAST(@size AS FLOAT) +FLOOR(RAND()*2 + 2)/2) AS NVARCHAR(4))
+			SET @color = N'Đỏ'
+			SET @GD_Price += @GD_Price + FLOOR(RAND()*20000 + 20000)
+			SET @count = @count + 1
+        END
+		FETCH NEXT FROM cursor1 INTO  @Id_Good, @GD_Name, @GD_Price,
+	@GD_Discount_Rate, @GD_Rating_AVG, @Thumbnail_URL, @Id_Supplier, 
+	@Supplier_Name, @Product_Group, @Id_TG
+	END
+	CLOSE cursor1              -- Đóng Cursor
+DEALLOCATE cursor1
+END
+SELECT * FROM dbo.GoodPresented
+SELECT * FROM dbo.GoodDetail
+
+
+
+SELECT * FROM dbo.TypeGood
+CREATE PROCEDURE createTG
+AS
+BEGIN
+	DECLARE @table TABLE(
+	Id_TG INT,
+	TG_Name NVARCHAR(255)
+	)
+	DECLARE @id INT
+	DECLARE @name NVARCHAR(255)
+	DECLARE cursor1 CURSOR FOR SELECT * FROM dbo.TypeGood
+	OPEN cursor1
+	FETCH NEXT FROM cursor1 INTO  @id, @name
+	WHILE @@FETCH_STATUS = 0
+	BEGIN
+		SET @name = (SELECT SUBSTRING(@name,1, CHARINDEX('/', @name) - 1))
+		INSERT INTO @table
+		(
+		    Id_TG,
+			TG_Name
+		)
+		VALUES
+		(   @id,    -- Id_Good - int
+		    @name  -- GD_Name - nvarchar(255)
+		)
+		FETCH NEXT FROM cursor1 INTO  @id, @name
+    END
+    CLOSE cursor1              -- Đóng Cursor
+	DEALLOCATE cursor1
+
+
+	DELETE FROM dbo.TypeGood
+
+	SET @id = 1
+	DECLARE cursor2 CURSOR FOR SELECT TG_Name FROM @table GROUP BY TG_Name
+	OPEN cursor2
+	FETCH NEXT FROM cursor2 INTO @name
+	WHILE @@FETCH_STATUS = 0
+	BEGIN
+		INSERT INTO dbo.TypeGood
+		(Id_TG,
+		    TG_Name
+		)
+		VALUES
+		(@id,@name-- TG_Name - nvarchar(255)
+		)
+		SET @id = @id + 1
+		FETCH NEXT FROM cursor2 INTO @name
+    END
+    CLOSE cursor2             -- Đóng Cursor
+	DEALLOCATE cursor2
+END
+
+EXEC createTG
+
+SELECT * FROM dbo.TypeGood
