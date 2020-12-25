@@ -1,6 +1,7 @@
 USE QL_BHOL
 GO 
 EXEC dbo.gen_typeGood
+
 go
 EXEC createTG
 go
@@ -57,3 +58,5 @@ WHERE Id_TG = 15
 go
 EXEC dbo.gen_gooddetail
 go
+
+SELECT * FROM dbo.GoodDetail

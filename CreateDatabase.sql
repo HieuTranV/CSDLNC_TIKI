@@ -12,20 +12,16 @@ CREATE TABLE Customer(
 	Id_Customer INT IDENTITY(1,1),
 	Customer_Email VARCHAR(30) UNIQUE,
 	Customer_Phone VARCHAR(10) UNIQUE,
-	Customer_Password VARCHAR(25)
+	Customer_Password VARCHAR(25),
+	Customer_Name NVARCHAR(255),
+	Customer_Gender BIT,
+	Customer_Birthday DATE,
 	CONSTRAINT PK_C
 	PRIMARY KEY (Id_Customer)
 )
 
-CREATE TABLE CustomerInfo (
-	Id_Customer INT,
-	Customer_Name NVARCHAR(255),
-	Customer_Gender BIT,
-	Customer_Birthday DATE
-	CONSTRAINT PK_CI
-	PRIMARY KEY (Id_Customer)
-)
-
+CREATE NONCLUSTERED INDEX index_Pass ON dbo.Customer(Customer_Password)
+go
 
 CREATE TABLE Supplier (
 	Id_Supplier INT,
@@ -38,11 +34,13 @@ CREATE TABLE Supplier (
 	PRIMARY KEY (Id_Supplier)
 )
 
+CREATE NONCLUSTERED INDEX index_supplier ON dbo.Supplier(Supplier_Name)
+GO 
 
 CREATE TABLE TypeGood (
 	Id_TG INT,
 	TG_Name NVARCHAR(100),
-	TG_URL VARCHAR(50)
+	TG_URL VARCHAR(50) UNIQUE,
 	CONSTRAINT PK_TG
 	PRIMARY KEY (Id_TG)
 )
@@ -57,14 +55,12 @@ CREATE TABLE GoodDetail (
 	GD_Sold INT,
 	GD_Discount_Rate FLOAT,
 	GD_Rating_AVG FLOAT,
-	Thumbnail_URL NTEXT,
-	Thumbnail_width FLOAT,
-	Thumbnail_height FLOAT, 
-	Id_Good INT,
-	Id_TG INT,
-	Id_Supplier INT,
+	Thumbnail_URL NTEXT NOT NULL, 
+	Id_Good INT NOT NULL,
+	Id_TG INT NOT NULL,
+	Id_Supplier INT NOT NULL,
 	Supplier_Name NVARCHAR(255),
-	Specification_Type NVARCHAR(200)
+	Specification_Type NVARCHAR(200) NOT NULL,
 	CONSTRAINT PK_GD
 	PRIMARY KEY (Id_GD)
 )
@@ -75,19 +71,21 @@ CREATE TABLE GoodPresented(
 	GD_Price MONEY,
 	GD_Discount_Rate FLOAT,
 	GD_Rating_AVG FLOAT,
-	Thumbnail_URL NTEXT,
+	Thumbnail_URL NTEXT NOT NULL,
 	Id_Supplier INT,
 	Supplier_Name NVARCHAR(255),
-	Product_Group NVARCHAR(255)
+	Product_Group NVARCHAR(255) NOT NULL,
+	isStock BIT NOT NULL,
 	CONSTRAINT PK_GP
 	PRIMARY KEY (Id_Good)
 )
+
 
 CREATE TABLE Warehouse(
 	Id_WH INT IDENTITY(1, 1),
 	WH_Name NVARCHAR(255),
 	WH_Address NVARCHAR(255),
-	WH_Hotline CHAR(11)
+	WH_Hotline CHAR(11) UNIQUE,
 	CONSTRAINT PK_WH
 	PRIMARY KEY (Id_WH)
 )
@@ -107,8 +105,7 @@ CREATE TABLE Good_Cart(
 	Id_Good_Cart INT IDENTITY(1, 1),
 	Id_GD INT,
 	Id_Customer INT,
-	GC_Number INT,
-	WH_Hotline CHAR(10)
+	Product_Number INT,
 	CONSTRAINT PK_Good_Cart
 	PRIMARY KEY (Id_Good_Cart)
 )
@@ -116,14 +113,14 @@ CREATE TABLE Good_Cart(
 
 CREATE TABLE TypePay(
 	Id_TP INT IDENTITY(1, 1),
-	TP_Name NVARCHAR(128)
+	TP_Name NVARCHAR(128),
 	CONSTRAINT PK_TP
 	PRIMARY KEY (Id_TP)
 )
 
 CREATE TABLE StatusInvoice(
 	Id_StatusInvoice INT IDENTITY(1, 1),
-	StatusInvoice_Name NVARCHAR(30)
+	StatusInvoice_Name NVARCHAR(30),
 	CONSTRAINT PK_SI
 	PRIMARY KEY (Id_StatusInvoice)
 )
@@ -139,14 +136,14 @@ CREATE TABLE DeliveryInformation(
 	DI_District_Id INT,
 	DI_Ward_Name NVARCHAR(50),
 	DI_District_Name NVARCHAR(50),
-	DI_Province_Name NVARCHAR(50) 
+	DI_Province_Name NVARCHAR(50),
 	CONSTRAINT PK_DI
 	PRIMARY KEY (Id_DI)
 )
 
 CREATE TABLE TypeVoucher(
 	Id_TV INT IDENTITY(1,1),
-	TV_Name NVARCHAR(255) 
+	TV_Name NVARCHAR(255), 
 	CONSTRAINT PK_TV
 	PRIMARY KEY (Id_TV)
 )
@@ -164,14 +161,14 @@ CREATE TABLE Voucher(
 
 CREATE TABLE PublicVoucher(
 	Id_PublicVoucher INT,
-	Voucher_Remain INT
+	Voucher_Remain INT,
 	CONSTRAINT PK_PublicVoucher
 	PRIMARY KEY (Id_PublicVoucher)
 )
 
 CREATE TABLE PersonalVoucher(
 	Id_PersonalVoucher INT,
-	VoucherEachPerson INT
+	VoucherEachPerson INT,
 	CONSTRAINT PK_PersonalVoucher
 	PRIMARY KEY (Id_PersonalVoucher)
 )
@@ -179,7 +176,7 @@ CREATE TABLE PersonalVoucher(
 CREATE TABLE Customer_PersonalVoucher(
 	Id_Customer INT,
 	Id_PersonalVoucher INT,
-	Voucher_Remain INT
+	Voucher_Remain INT,
 	CONSTRAINT PK_C_PersonalVoucher
 	PRIMARY KEY (Id_Customer, Id_PersonalVoucher)
 )
@@ -187,7 +184,7 @@ CREATE TABLE Customer_PersonalVoucher(
 
 CREATE TABLE Customer_PublicVoucher(
 	Id_Customer INT,
-	Id_PublicVoucher INT
+	Id_PublicVoucher INT,
 	CONSTRAINT PK_C_PublicVoucher
 	PRIMARY KEY (Id_Customer, Id_PublicVoucher)
 )
@@ -195,16 +192,19 @@ CREATE TABLE Customer_PublicVoucher(
 CREATE TABLE Invoice(
 	Id_Invoice INT IDENTITY(1, 1),
 	Invoice_InvoiceDate DATETIME,
-	Invoice_TotalPrice MONEY,
-	Id_StatusInvoice INT,
+	Invoice_TotalPrice MONEY NOT NULL,
+	Id_StatusInvoice INT NOT NULL,
 	Id_ShipVoucher INT,
 	Id_ProductVoucher INT,
 	Id_TP INT,
 	Id_DI INT,
-	Id_Customer INT
+	Id_Customer INT,
 	CONSTRAINT PK_Invoice
 	PRIMARY KEY (Id_Invoice)
 )
+
+CREATE NONCLUSTERED INDEX index_Invoice ON dbo.Invoice(Invoice_TotalPrice)
+
 
 CREATE TABLE Good_Invoice(
 	Id_GD INT,
@@ -212,7 +212,7 @@ CREATE TABLE Good_Invoice(
 	GD_Name NVARCHAR(255),
 	GD_Price MONEY,
 	Supplier_Name CHAR(30),
-	GI_Number INT
+	GI_Number INT,
 	CONSTRAINT PK_Good_Invoice
 	PRIMARY KEY (Id_GD,Id_Invoice)
 )
@@ -229,7 +229,7 @@ CREATE TABLE Good_Delivery(
 	Id_Good_Warehouse INT,
 	Id_DO INT,
 	Id_Invoice INT,
-	GoodNumber INT
+	GoodNumber INT,
 	CONSTRAINT PK_Good_Delivery
 	PRIMARY KEY (Id_Good_Warehouse, Id_DO)
 )
@@ -294,13 +294,6 @@ CREATE TABLE [dbo].[Ward](
 	[Id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
-
-
-ALTER TABLE dbo.CustomerInfo
-ADD CONSTRAINT FK_CI_C
-	FOREIGN KEY (Id_Customer)
-	REFERENCES dbo.Customer
-
 
 ALTER TABLE dbo.GoodDetail
 ADD CONSTRAINT FK_GD_TG
@@ -465,6 +458,7 @@ GO
 ALTER TABLE [dbo].[District]  WITH CHECK ADD  CONSTRAINT [FK_District_Province] FOREIGN KEY([ProvinceId])
 REFERENCES [dbo].[Province] ([Id])
 GO
+
 ALTER TABLE [dbo].[District] CHECK CONSTRAINT [FK_District_Province]
 GO
 ALTER TABLE [dbo].[Ward]  WITH CHECK ADD  CONSTRAINT [FK_Ward_District] FOREIGN KEY([DistrictID])
@@ -473,4 +467,8 @@ GO
 ALTER TABLE [dbo].[Ward] CHECK CONSTRAINT [FK_Ward_District]
 GO
 EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Kinh độ, vĩ độ' , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'District', @level2type=N'COLUMN',@level2name=N'LatiLongTude'
-GO
+GO	
+
+SELECT * FROM dbo.Supplier
+
+SELECT * FROM dbo.GoodPresented
