@@ -3067,7 +3067,6 @@ insert into Customer (Customer_Email, Customer_Phone, Customer_Password, Custome
 insert into Customer (Customer_Email, Customer_Phone, Customer_Password, Customer_Name, Customer_Gender, Customer_Birthday) values ('mlaugharnerq@exblog.jp', '7865980774', 'h5E2Bh2KY', 'Murial Laugharne', 1, '7/26/1999');
 insert into Customer (Customer_Email, Customer_Phone, Customer_Password, Customer_Name, Customer_Gender, Customer_Birthday) values ('ltrumanrr@i2i.jp', '5456794312', 'Qpr2N9Nh', 'Lucita Truman', 0, '11/1/1989');
 GO
-
 SET IDENTITY_INSERT [dbo].[Province] ON 
 
 INSERT [dbo].[Province] ([Id], [Name], [Type], [TelephoneCode], [ZipCode], [SortOrder], [IsPublished], [IsDeleted]) VALUES (1, N'Hà Nội', N'Thành Phố', 4, NULL, 24, 1, 0)

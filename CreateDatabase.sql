@@ -55,7 +55,7 @@ CREATE TABLE GoodDetail (
 	GD_Sold INT,
 	GD_Discount_Rate FLOAT,
 	GD_Rating_AVG FLOAT,
-	Thumbnail_URL NTEXT NOT NULL, 
+	Thumbnail_URL NVARCHAR(150) NOT NULL, 
 	Id_Good INT NOT NULL,
 	Id_TG INT NOT NULL,
 	Id_Supplier INT NOT NULL,
@@ -71,11 +71,11 @@ CREATE TABLE GoodPresented(
 	GD_Price MONEY,
 	GD_Discount_Rate FLOAT,
 	GD_Rating_AVG FLOAT,
-	Thumbnail_URL NTEXT NOT NULL,
+	Thumbnail_URL NVARCHAR(150) NOT NULL,
 	Id_Supplier INT,
 	Supplier_Name NVARCHAR(255),
 	Product_Group NVARCHAR(255) NOT NULL,
-	isStock BIT NOT NULL,
+	isStock BIT DEFAULT 1 NOT NULL,
 	CONSTRAINT PK_GP
 	PRIMARY KEY (Id_Good)
 )
@@ -93,6 +93,7 @@ CREATE TABLE Warehouse(
 CREATE TABLE Good_Warehouse(
 	Id_Good_Warehouse INT IDENTITY(1, 1),
 	Id_GD INT,
+	GD_Name NVARCHAR(255),
 	Id_WH INT,
 	Supplier_Name NVARCHAR(30),
 	Number INT,
@@ -104,6 +105,7 @@ CREATE TABLE Good_Warehouse(
 CREATE TABLE Good_Cart(
 	Id_Good_Cart INT IDENTITY(1, 1),
 	Id_GD INT,
+	GD_Name NVARCHAR(255),
 	Id_Customer INT,
 	Product_Number INT,
 	CONSTRAINT PK_Good_Cart
@@ -451,6 +453,11 @@ ADD CONSTRAINT FK_DI_WARD
 	FOREIGN KEY(DI_Ward_Id)
 	REFERENCES WARD
 
+ALTER TABLE  dbo.GoodPresented
+ADD CONSTRAINT FK_GP_S
+	FOREIGN KEY (Id_Supplier)
+	REFERENCES dbo.Supplier
+	
 ALTER TABLE [dbo].[Ward] ADD  CONSTRAINT [DF_Ward_SortOrder]  DEFAULT ((1)) FOR [SortOrder]
 GO
 ALTER TABLE [dbo].[Ward] ADD  CONSTRAINT [DF_Ward_IsPublished]  DEFAULT ((1)) FOR [IsPublished]
@@ -468,7 +475,3 @@ ALTER TABLE [dbo].[Ward] CHECK CONSTRAINT [FK_Ward_District]
 GO
 EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Kinh độ, vĩ độ' , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'District', @level2type=N'COLUMN',@level2name=N'LatiLongTude'
 GO	
-
-SELECT * FROM dbo.Supplier
-
-SELECT * FROM dbo.GoodPresented

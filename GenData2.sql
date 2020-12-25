@@ -57,6 +57,4 @@ SET TG_URL='voucher-dich-vu'
 WHERE Id_TG = 15
 go
 EXEC dbo.gen_gooddetail
-go
-
-SELECT * FROM dbo.GoodDetail
+GO
