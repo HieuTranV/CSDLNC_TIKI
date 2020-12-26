@@ -194,7 +194,7 @@ CREATE TABLE Customer_PublicVoucher(
 CREATE TABLE Invoice(
 	Id_Invoice INT IDENTITY(1, 1),
 	Invoice_InvoiceDate DATETIME,
-	Invoice_TotalPrice MONEY NOT NULL,
+	Invoice_TotalPrice MONEY DEFAULT 0 NOT NULL,
 	Id_StatusInvoice INT NOT NULL,
 	Id_ShipVoucher INT,
 	Id_ProductVoucher INT,
@@ -213,7 +213,7 @@ CREATE TABLE Good_Invoice(
 	Id_Invoice INT,
 	GD_Name NVARCHAR(255),
 	GD_Price MONEY,
-	Supplier_Name CHAR(30),
+	Supplier_Name NVARCHAR(255),
 	GI_Number INT,
 	CONSTRAINT PK_Good_Invoice
 	PRIMARY KEY (Id_GD,Id_Invoice)

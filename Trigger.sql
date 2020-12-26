@@ -183,7 +183,7 @@ BEGIN
 		IF (@id_GD IS NOT NULL)
 		BEGIN 
 			UPDATE dbo.Good_Invoice
-			SET GD_Price = (SELECT GD_Price FROM dbo.GoodDetail WHERE @id_GD = Id_GD)
+			SET GD_Price = (SELECT FLOOR(GD_Price * (100 - GD_Discount_Rate)/100000)*1000 FROM dbo.GoodDetail WHERE @id_GD = Id_GD)
 			WHERE Good_Invoice.Id_GD = @id_GD AND Id_Invoice = @id_invoice
 
 			UPDATE dbo.Good_Invoice
