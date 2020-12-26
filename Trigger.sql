@@ -274,3 +274,81 @@ BEGIN
 	CLOSE cursorTriggerGoodDelivery
 	DEALLOCATE cursorTriggerGoodDelivery
 END
+
+DROP TRIGGER IF EXISTS Trigger_Insert_Delivery_Info
+GO 
+create trigger Trigger_Insert_Delivery_Info on dbo.DeliveryInformation
+for insert, update
+as
+BEGIN
+	DECLARE @Id_DI int 
+	DECLARE @DI_Ward_Id INT
+	DECLARE @DI_Province_Id INT
+	DECLARE @DI_District_Id INT
+	DECLARE @DI_Ward_Name NVARCHAR(50)
+	DECLARE @DI_District_Name NVARCHAR(50)
+	DECLARE @DI_Province_Name NVARCHAR(50)
+
+
+	DECLARE cursorTriggerDeliveryInfo CURSOR FOR SELECT DISTINCT Inserted.Id_DI, Inserted.DI_Ward_Id, Inserted.DI_Province_Id, Inserted.DI_District_Id, Inserted.DI_Ward_Name, Inserted.DI_District_Name, Inserted.DI_Province_Name  FROM Inserted
+	OPEN cursorTriggerDeliveryInfo
+	FETCH NEXT FROM cursorTriggerDeliveryInfo INTO @Id_DI, @DI_Ward_Id, @DI_Province_Id, @DI_District_Id, @DI_Ward_Name, @DI_District_Name, @DI_Province_Name
+
+	WHILE @@FETCH_STATUS = 0
+	BEGIN
+
+		IF ((SELECT ProvinceId FROM dbo.District WHERE Id =@DI_District_Id) != @DI_Province_Id) 
+		BEGIN
+			PRINT 'Wrong district input'
+			ROLLBACK TRAN
+        END
+
+		IF ((SELECT DistrictID FROM dbo.Ward WHERE Id =@DI_Ward_Id) != @DI_District_Id) 
+		BEGIN
+			PRINT 'Wrong ward input'
+			ROLLBACK TRAN
+        END
+
+		IF (@DI_Ward_Name IS NOT NULL AND @DI_Ward_Name != (SELECT Name FROM dbo.Ward WHERE @DI_Ward_Id = Id)) 
+		BEGIN 
+			PRINT 'Ward is setted to right value'
+		END 
+
+		IF (@DI_Province_Name IS NOT NULL AND @DI_Province_Name != (SELECT Name FROM dbo.Province WHERE @DI_Province_Id = Id)) 
+		BEGIN 
+			PRINT 'Province is setted to right value'
+		END 
+
+		IF (@DI_District_Name IS NOT NULL AND @DI_District_Name != (SELECT Name FROM dbo.District WHERE @DI_District_Id = Id)) 
+		BEGIN 
+			PRINT 'District is setted to right value'
+		END 
+
+		IF (@DI_Ward_Id IS NOT NULL)
+		BEGIN 
+
+			UPDATE dbo.DeliveryInformation
+			SET DI_Ward_Name = (SELECT Name FROM dbo.Ward WHERE @DI_Ward_Id = Id)
+			WHERE Id_DI = @Id_DI
+		END 
+
+		IF (@DI_Province_Id IS NOT NULL)
+		BEGIN 
+
+			UPDATE dbo.DeliveryInformation
+			SET DI_Province_Name = (SELECT Name FROM dbo.Province WHERE @DI_Province_Id = Id)
+			WHERE Id_DI = @Id_DI
+		END 
+
+		IF (@DI_District_Id IS NOT NULL)
+		BEGIN 
+
+			UPDATE dbo.DeliveryInformation
+			SET DI_District_Name = (SELECT Name FROM dbo.District WHERE @DI_District_Id = Id)
+			WHERE Id_DI = @Id_DI
+		END  
+		FETCH NEXT FROM cursorTriggerDeliveryInfo INTO @Id_DI, @DI_Ward_Id, @DI_Province_Id, @DI_District_Id, @DI_Ward_Name, @DI_District_Name, @DI_Province_Name
+    END
+	CLOSE cursorTriggerDeliveryInfo
+	DEALLOCATE cursorTriggerDeliveryInfo
+END
