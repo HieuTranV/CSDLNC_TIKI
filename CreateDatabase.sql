@@ -55,7 +55,7 @@ CREATE TABLE GoodDetail (
 	GD_Sold INT,
 	GD_Discount_Rate FLOAT,
 	GD_Rating_AVG FLOAT,
-	Thumbnail_URL NVARCHAR(150) NOT NULL, 
+	Thumbnail_URL VARCHAR(150) NOT NULL, 
 	Id_Good INT NOT NULL,
 	Id_TG INT NOT NULL,
 	Id_Supplier INT NOT NULL,
@@ -71,7 +71,7 @@ CREATE TABLE GoodPresented(
 	GD_Price MONEY,
 	GD_Discount_Rate FLOAT,
 	GD_Rating_AVG FLOAT,
-	Thumbnail_URL NVARCHAR(150) NOT NULL,
+	Thumbnail_URL VARCHAR(150) NOT NULL,
 	Id_Supplier INT,
 	Supplier_Name NVARCHAR(255),
 	Product_Group NVARCHAR(255) NOT NULL,
@@ -230,6 +230,7 @@ CREATE TABLE DeliveryOrder(
 CREATE TABLE Good_Delivery(
 	Id_Good_Warehouse INT,
 	Id_DO INT,
+	GD_Name NVARCHAR(255),
 	Id_Invoice INT,
 	GoodNumber INT,
 	CONSTRAINT PK_Good_Delivery
@@ -411,11 +412,6 @@ ALTER TABLE dbo.Good_Delivery
 ADD CONSTRAINT FK_GoodDelivery_DO
 	FOREIGN KEY (Id_DO)
 	REFERENCES dbo.DeliveryOrder
-
-ALTER TABLE dbo.Good_Delivery
-ADD CONSTRAINT FK_GoodDelivery_Invoice
-	FOREIGN KEY (Id_Invoice)
-	REFERENCES dbo.Invoice
 
 ALTER TABLE dbo.Customer_PersonalVoucher
 ADD CONSTRAINT FK_CPersonalV_PersonalVoucher
