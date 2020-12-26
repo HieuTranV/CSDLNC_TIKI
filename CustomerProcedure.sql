@@ -1,4 +1,4 @@
-﻿use QL_BHOL1	
+﻿use QL_BHOL
 
 
 --********Nếu @Flag = 1 nghĩa là có lỗi, 0 thì ngược lại**********
@@ -42,12 +42,9 @@ BEGIN
 			   RETURN;
 	END
 
-	print 'here'
-
 	INSERT INTO Customer(Customer_Email, Customer_Phone, Customer_Password,Customer_Name, Customer_Gender, Customer_Birthday) values (@Cus_Email, @Cus_Phone, @Cus_Pass, @Cus_Name, @Cus_Gender, @Cus_Birthday)
 
 	SET @Cus_ID = (SELECT Id_Customer FROM Customer WHERE Customer_Email = @Cus_Email)
-	print @Cus_ID
 
 	INSERT INTO DeliveryInformation(Id_Customer) VALUES (@Cus_ID)
 	Set @Mess = N'Tạo tài khoản thành công'
@@ -441,7 +438,7 @@ BEGIN
 		SET TRAN ISOLATION LEVEL REPEATABLE READ
 		SET @Flag = 1
 
-		IF NOT EXISTS (SELECT * FROM Invoice WHERE Id_Invoice = @Id_Invoice and Id_Customer = @Id_Customer)
+		IF NOT EXISTS (SELECT * FROM Invoice WHERE Id_Invoice = @Id_Invoice)
 		BEGIN
 			SET @Flag = 1
 			SET @Mess = N'Không tìm thấy thông tin'
@@ -510,7 +507,7 @@ BEGIN
 		SET TRAN ISOLATION LEVEL REPEATABLE READ
 		SET @Flag = 1
 
-		IF NOT EXISTS (SELECT * FROM Invoice WHERE Id_Invoice = @Id_Invoice and Id_Customer = @Id_Customer)
+		IF NOT EXISTS (SELECT * FROM Invoice WHERE Id_Invoice = @Id_Invoice)
 		BEGIN
 			SET @Flag = 1
 			SET @Mess = N'Không tìm thấy thông tin'
