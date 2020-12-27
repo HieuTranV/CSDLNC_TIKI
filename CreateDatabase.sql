@@ -64,7 +64,9 @@ CREATE TABLE GoodDetail (
 	CONSTRAINT PK_GD
 	PRIMARY KEY (Id_GD)
 )
-
+GO
+ALTER TABLE dbo.GoodDetail ADD Number_Rating INT DEFAULT 100
+GO
 CREATE TABLE GoodPresented(
 	Id_Good INT IDENTITY(1, 1),
 	GD_Name NVARCHAR(255),
@@ -80,6 +82,26 @@ CREATE TABLE GoodPresented(
 	PRIMARY KEY (Id_Good)
 )
 
+CREATE TABLE Customer_Rate_Good (
+	Id_Customer INT,
+	Id_GD INT,
+	Rate INT,
+	CONSTRAINT PK_CRG
+	PRIMARY KEY (Id_Customer, Id_GD)
+)
+GO 
+
+ALTER TABLE dbo.Customer_Rate_Good
+ADD CONSTRAINT FK_CRG_G
+	FOREIGN KEY (Id_GD)
+	REFERENCES	dbo.GoodDetail
+
+
+ALTER TABLE dbo.Customer_Rate_Good
+ADD CONSTRAINT FK_CRG_C
+	FOREIGN KEY (Id_Customer)
+	REFERENCES	dbo.Customer
+GO 
 
 CREATE TABLE Warehouse(
 	Id_WH INT IDENTITY(1, 1),
@@ -278,6 +300,8 @@ CREATE TABLE [dbo].[Province](
 ) ON [PRIMARY]
 
 GO
+ALTER TABLE dbo.Province ADD Delivery_Price MONEY DEFAULT 10000
+GO
 /****** Object:  Table [dbo].[Ward]    Script Date: 1/9/2017 8:50:03 AM ******/
 SET ANSI_NULLS ON
 GO
@@ -471,3 +495,5 @@ ALTER TABLE [dbo].[Ward] CHECK CONSTRAINT [FK_Ward_District]
 GO
 EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Kinh độ, vĩ độ' , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'District', @level2type=N'COLUMN',@level2name=N'LatiLongTude'
 GO	
+
+z

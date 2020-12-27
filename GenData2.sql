@@ -58,3 +58,5 @@ WHERE Id_TG = 15
 go
 EXEC dbo.gen_gooddetail
 GO
+
+	

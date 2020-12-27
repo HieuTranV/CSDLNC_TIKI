@@ -1,5 +1,68 @@
 ﻿USE QL_BHOL
-go
+GO
+
+INSERT INTO dbo.TypeVoucher
+(
+    TV_Name
+)
+VALUES
+(N'Sản phẩm'), (N'Giao hàng')
+GO 
+
+INSERT INTO dbo.Voucher
+(
+    Voucher_Name,
+    Voucher_StartDate,
+    Voucher_EndDate,
+    Id_TV,
+    Voucher_Value
+)
+VALUES
+(N'SALE1', GETDATE(),GETDATE() + 5,1, 5),
+(N'SALE2', GETDATE(),GETDATE() + 3,1, 2),
+(N'SALE3', GETDATE(),GETDATE() + 7,1, 3),
+(N'FREESHIP1', GETDATE(),GETDATE() + 4,2, 100),
+(N'FREESHIP2', GETDATE(),GETDATE() + 5,2, 100),
+(N'SALE4', GETDATE(),GETDATE() + 1,1, 5),
+(N'SALE5', GETDATE(),GETDATE() + 2,1, 5),
+(N'FREESHIP3%', GETDATE(),GETDATE() + 10,2, 100),
+(N'SALE6', GETDATE(),GETDATE() + 10,1, 5),
+(N'SALE7', GETDATE(),GETDATE() + 10,1, 5)
+
+GO 
+INSERT INTO dbo.PublicVoucher
+(
+    Id_PublicVoucher,
+    Voucher_Remain
+)
+VALUES
+(1, 1000), (2, 5000), (3, 5000), (4, 1000)
+
+INSERT INTO dbo.PersonalVoucher
+(
+    Id_PersonalVoucher,
+    VoucherEachPerson
+)
+VALUES
+(5,2), (6,2), (7,1), (8,2), (9,3), (10, 1)
+
+INSERT dbo.Customer_PublicVoucher
+(
+    Id_Customer,
+    Id_PublicVoucher
+)
+VALUES
+(1, 2), (2, 2), (1,1)
+
+INSERT INTO dbo.Customer_PersonalVoucher
+(
+    Id_Customer,
+    Id_PersonalVoucher,
+    Voucher_Remain
+)
+VALUES
+(1,6,2), (2, 6, 2), (3,7, 1)
+
 INSERT INTO dbo.TypePay
 (
     TP_Name
@@ -15233,3 +15296,24 @@ END
 go
 EXEC RemoveUnusedData
 
+DROP PROCEDURE IF EXISTS genPriceShip
+go
+CREATE PROCEDURE GenPriceShip
+AS
+BEGIN
+	DECLARE @id int
+	DECLARE CursorShip CURSOR FOR SELECT Id FROM dbo.Province
+	OPEN CursorShip
+	FETCH NEXT FROM CursorShip INTO @id
+	WHILE @@FETCH_STATUS = 0
+	BEGIN
+		UPDATE dbo.Province
+		SET Delivery_Price = FLOOR(RAND()*11 +10)*1000
+        WHERE id = @id
+		FETCH NEXT FROM CursorShip INTO @id
+    END 
+	CLOSE CursorShip
+	DEALLOCATE CursorShip
+END
+GO
+EXEC GenPriceShip

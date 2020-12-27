@@ -80,40 +80,53 @@ BEGIN
 	DECLARE @GD_Name NVARCHAR(255)
     DECLARE @id_GD INT
     DECLARE @id INT 
-	DECLARE cursorTriggerGoodWarehouse CURSOR FOR SELECT DISTINCT Inserted.Id_Good_Warehouse, Inserted.Id_GD, Inserted.GD_Name, Inserted.Supplier_Name FROM Inserted
+	DECLARE @id_warehouse INT 
+	DECLARE @number INT 
+	DECLARE cursorTriggerGoodWarehouse CURSOR FOR SELECT DISTINCT Inserted.Id_Good_Warehouse, Inserted.Id_GD, Inserted.GD_Name, Inserted.Supplier_Name, Inserted.Id_WH, Inserted.Number FROM Inserted
 	OPEN cursorTriggerGoodWarehouse
-	FETCH NEXT FROM cursorTriggerGoodWarehouse INTO @id, @id_GD, @GD_Name, @supplier_name
+	FETCH NEXT FROM cursorTriggerGoodWarehouse INTO @id, @id_GD, @GD_Name, @supplier_name, @id_warehouse, @number
 	WHILE @@FETCH_STATUS = 0
 	BEGIN
-		IF (@supplier_name IS NOT NULL AND @supplier_name != (SELECT Supplier_Name FROM dbo.GoodDetail WHERE @id_GD = Id_GD)) 
-		BEGIN 
+		IF (SELECT COUNT(Id_Good_Warehouse) FROM dbo.Good_Warehouse WHERE Id_GD = @id_GD AND Id_WH = @id_warehouse) >= 2
+		BEGIN
+			DELETE FROM dbo.Good_Warehouse WHERE Id_Good_Warehouse =  @id
 			UPDATE dbo.Good_Warehouse
-			SET Supplier_Name = NULL
-			WHERE Id_Good_Warehouse = @id
-			PRINT 'Supplier name is setted to right value'
-		END 
-		IF (@GD_Name IS NOT NULL AND @GD_Name != (SELECT GD_Name FROM dbo.GoodDetail WHERE @id_GD = Id_GD)) 
+			SET Number = @number + Number
+            WHERE Id_GD = @id_GD AND Id_WH = @id_warehouse
+        END 
+		ELSE
 		BEGIN 
-			UPDATE dbo.Good_Warehouse
-			SET GD_Name = NULL
-			WHERE Id_Good_Warehouse = @id
-			PRINT 'Good name is setted to right value'
-		END
-		IF (@id_GD IS NOT NULL)
-		BEGIN 
-			UPDATE dbo.Good_Warehouse
-			SET GD_Name = (SELECT GD_Name FROM dbo.GoodDetail WHERE @id_GD = Id_GD)
-			WHERE Good_Warehouse.Id_GD = @id_GD AND Good_Warehouse.GD_Name IS NULL
+			IF (@supplier_name IS NOT NULL AND @supplier_name != (SELECT Supplier_Name FROM dbo.GoodDetail WHERE @id_GD = Id_GD)) 
+			BEGIN 
+				UPDATE dbo.Good_Warehouse
+				SET Supplier_Name = NULL
+				WHERE Id_Good_Warehouse = @id
+				PRINT 'Supplier name is setted to right value'
+			END
+			IF (@GD_Name IS NOT NULL AND @GD_Name != (SELECT GD_Name FROM dbo.GoodDetail WHERE @id_GD = Id_GD)) 
+			BEGIN 
+				UPDATE dbo.Good_Warehouse
+				SET GD_Name = NULL
+				WHERE Id_Good_Warehouse = @id
+				PRINT 'Good name is setted to right value'
+			END
+			IF (@id_GD IS NOT NULL)
+			BEGIN 
+				UPDATE dbo.Good_Warehouse
+				SET GD_Name = (SELECT GD_Name FROM dbo.GoodDetail WHERE @id_GD = Id_GD)
+				WHERE Good_Warehouse.Id_Good_Warehouse = @id
 
-			UPDATE dbo.Good_Warehouse
-			SET Supplier_Name = (SELECT Supplier_Name FROM dbo.GoodDetail WHERE @id_GD = Id_GD)
-			WHERE Good_Warehouse.Id_GD = @id_GD AND Good_Warehouse.Supplier_Name IS NULL
-		END 
-		FETCH NEXT FROM cursorTriggerGoodWarehouse INTO @id, @id_GD, @GD_Name, @supplier_name
+				UPDATE dbo.Good_Warehouse
+				SET Supplier_Name = (SELECT Supplier_Name FROM dbo.GoodDetail WHERE @id_GD = Id_GD)
+				WHERE Good_Warehouse.Id_Good_Warehouse = @id
+			END 
+		END
+		FETCH NEXT FROM cursorTriggerGoodWarehouse INTO @id, @id_GD, @GD_Name, @supplier_name, @id_warehouse, @number
     END
 	CLOSE cursorTriggerGoodWarehouse
 	DEALLOCATE cursorTriggerGoodWarehouse
 END
+
 
 -- trigger good cart
 DROP TRIGGER IF EXISTS Trigger_Insert_GoodCart
@@ -124,28 +137,40 @@ as
 BEGIN
 	DECLARE @GD_Name NVARCHAR(255)
     DECLARE @id_GD INT
+	DECLARE @id_Customer INT 
 	DECLARE @id INT 
-	DECLARE Trigger_Insert_GoodCart CURSOR FOR SELECT DISTINCT Inserted.Id_Good_Cart, Inserted.Id_GD, Inserted.GD_Name FROM Inserted
+	DECLARE @number int
+	DECLARE Trigger_Insert_GoodCart CURSOR FOR SELECT DISTINCT Inserted.Id_Good_Cart, Inserted.Id_GD, Inserted.GD_Name, Inserted.Id_Customer, Inserted.Product_Number FROM Inserted
 	OPEN Trigger_Insert_GoodCart
-	FETCH NEXT FROM Trigger_Insert_GoodCart INTO @id, @id_GD, @GD_Name
+	FETCH NEXT FROM Trigger_Insert_GoodCart INTO @id, @id_GD, @GD_Name, @id_Customer, @number
 	WHILE @@FETCH_STATUS = 0
 	BEGIN
-		IF (@GD_Name IS NOT NULL AND @GD_Name != (SELECT GD_Name FROM dbo.GoodDetail WHERE @id_GD = Id_GD)) 
-		BEGIN 
+		IF (SELECT COUNT(Id_Good_Cart) FROM dbo.Good_Cart WHERE @id_GD = Id_GD AND @id_Customer = Id_Customer) >= 2
+		BEGIN
+			DELETE FROM dbo.Good_Cart WHERE Id_Good_Cart = @id 
 			UPDATE dbo.Good_Cart
-			SET GD_Name = NULL
-			WHERE @id = Id_Good_Cart
-
-			PRINT 'Supplier name is setted to right value'
-		END 
-		IF (@id_GD IS NOT NULL)
+			SET Product_Number = @number
+            WHERE Id_GD = @id_GD AND Id_Customer = @id_Customer
+        END
+		ELSE 
 		BEGIN 
+			IF (@GD_Name IS NOT NULL AND @GD_Name != (SELECT GD_Name FROM dbo.GoodDetail WHERE @id_GD = Id_GD)) 
+			BEGIN 
+				UPDATE dbo.Good_Cart
+				SET GD_Name = NULL
+				WHERE @id = Id_Good_Cart
 
-			UPDATE dbo.Good_Cart
-			SET GD_Name = (SELECT GD_Name FROM dbo.GoodDetail WHERE @id_GD = Id_GD)
-			WHERE Good_Cart.Id_GD = @id_GD AND Good_Cart.GD_Name IS NULL
-		END 
-		FETCH NEXT FROM Trigger_Insert_GoodCart INTO @id, @id_GD, @GD_Name
+				PRINT 'Supplier name is setted to right value'
+			END 
+			IF (@id_GD IS NOT NULL)
+			BEGIN 
+
+				UPDATE dbo.Good_Cart
+				SET GD_Name = (SELECT GD_Name FROM dbo.GoodDetail WHERE @id_GD = Id_GD)
+				WHERE Good_Cart.Id_GD = @id_GD AND Good_Cart.GD_Name IS NULL
+			END 
+		END
+		FETCH NEXT FROM Trigger_Insert_GoodCart INTO @id, @id_GD, @GD_Name, @id_Customer, @number
     END
 	CLOSE Trigger_Insert_GoodCart
 	DEALLOCATE Trigger_Insert_GoodCart
@@ -221,7 +246,6 @@ VALUES
     NULL,         -- Id_DI - int
     1          -- Id_Customer - int
     )
-
 --trigger good delivery
 DROP TRIGGER IF EXISTS Trigger_Insert_GoodDelivery
 GO 
@@ -352,3 +376,67 @@ BEGIN
 	CLOSE cursorTriggerDeliveryInfo
 	DEALLOCATE cursorTriggerDeliveryInfo
 END
+
+
+DROP TRIGGER IF EXISTS Trigger_Rate_insert
+GO 
+create trigger Trigger_Rate_insert on dbo.Customer_Rate_Good
+for insert
+AS
+
+BEGIN TRAN
+	SET TRAN ISOLATION LEVEL SERIALIZABLE
+    DECLARE @id_customer INT
+	SET @id_customer = (SELECT inserted.id_customer FROM inserted)
+    DECLARE @id_GD INT
+	SET @id_GD = (SELECT inserted.id_GD FROM inserted)
+    DECLARE @rate INT
+	SET @rate = (SELECT inserted.Rate FROM inserted)
+
+	IF @id_GD in (SELECT Id_GD FROM dbo.Good_Invoice JOIN  dbo.Invoice ON Invoice.Id_Invoice = Good_Invoice.Id_Invoice 
+		WHERE @id_customer = Id_Customer AND Id_StatusInvoice = 3)
+		BEGIN 
+			IF (@rate >=0 AND @rate <=5)
+			BEGIN
+				UPDATE dbo.GoodDetail
+				SET GD_Rating_AVG = (GD_Rating_AVG* Number_Rating + @rate)/ (Number_Rating + 1)
+				WHERE Id_GD = @id_GD
+				UPDATE dbo.GoodDetail
+				SET Number_Rating = Number_Rating + 1
+				WHERE Id_GD = @id_GD
+            END
+			ELSE
+            BEGIN
+				ROLLBACK TRAN
+            END
+		END 
+		ELSE 
+		BEGIN
+			ROLLBACK TRAN
+		END
+COMMIT
+
+
+DROP TRIGGER IF EXISTS Trigger_Rate_Delete
+GO 
+create trigger Trigger_Rate_Delete on dbo.Customer_Rate_Good
+for DELETE
+AS
+BEGIN TRAN
+	SET TRAN ISOLATION LEVEL SERIALIZABLE
+    DECLARE @id_customer INT
+	SET @id_customer = (SELECT deleted.id_customer FROM deleted)
+    DECLARE @id_GD INT
+	SET @id_GD = (SELECT deleted.id_GD FROM deleted)
+    DECLARE @rate INT
+	SET @rate = (SELECT deleted.Rate FROM deleted)
+	                                              
+
+	UPDATE dbo.GoodDetail
+	SET GD_Rating_AVG = (GD_Rating_AVG* Number_Rating - @rate)/(Number_Rating - 1)
+	WHERE @id_GD = Id_GD
+
+	UPDATE dbo.GoodDetail
+	SET Number_Rating = Number_Rating - 1
+	WHERE @id_GD = Id_GD
+COMMIT
