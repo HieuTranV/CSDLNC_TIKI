@@ -13,19 +13,11 @@ BEGIN
 	FETCH NEXT FROM cursorTriggerGoodDetail INTO @supplier_name, @supplier_id, @id_GD
 	WHILE @@FETCH_STATUS = 0
 	BEGIN
-		IF (@supplier_name IS NOT NULL AND @supplier_name != (SELECT Supplier_Name FROM dbo.Supplier WHERE @supplier_id = Id_Supplier)) 
-		BEGIN 
-			UPDATE dbo.GoodDetail
-			SET Supplier_Name = NULL
-			WHERE Id_GD = @id_GD
-			PRINT 'Supplier name is setted to right value'
-		END 
 		IF (@supplier_id IS NOT NULL)
 		BEGIN 
-
 			UPDATE dbo.GoodDetail
 			SET Supplier_Name = (SELECT Supplier_Name FROM dbo.Supplier WHERE Id_Supplier = @supplier_id)
-			WHERE GoodDetail.Id_Supplier = @supplier_id AND GoodDetail.Supplier_Name IS NULL
+			WHERE GoodDetail.Id_Supplier = @supplier_id AND @id_GD = Id_GD
 		END 
 		FETCH NEXT FROM cursorTriggerGoodDetail INTO @supplier_name, @supplier_id, @id_GD
     END
@@ -48,19 +40,12 @@ BEGIN
 	FETCH NEXT FROM cursorTriggerGoodPresented INTO @supplier_name, @supplier_id, @id_Good
 	WHILE @@FETCH_STATUS = 0
 	BEGIN
-		IF (@supplier_name IS NOT NULL AND @supplier_name != (SELECT Supplier_Name FROM dbo.Supplier WHERE @supplier_id = Id_Supplier)) 
-		BEGIN 
-			UPDATE dbo.GoodPresented
-			SET Supplier_Name = NULL
-			WHERE Id_Good = @id_Good
-			PRINT 'Supplier name is setted to right value'
-		END 
+		 
 		IF (@supplier_id IS NOT NULL)
 		BEGIN 
-
 			UPDATE dbo.GoodPresented
 			SET Supplier_Name = (SELECT Supplier_Name FROM dbo.Supplier WHERE Id_Supplier = @supplier_id)
-			WHERE GoodPresented.Id_Supplier = @supplier_id AND GoodPresented.Supplier_Name IS NULL
+			WHERE GoodPresented.Id_Supplier = @supplier_id AND Id_Good = @id_Good
 		END 
 		FETCH NEXT FROM cursorTriggerGoodPresented INTO @supplier_name, @supplier_id, @id_Good
     END
@@ -96,20 +81,6 @@ BEGIN
         END 
 		ELSE
 		BEGIN 
-			IF (@supplier_name IS NOT NULL AND @supplier_name != (SELECT Supplier_Name FROM dbo.GoodDetail WHERE @id_GD = Id_GD)) 
-			BEGIN 
-				UPDATE dbo.Good_Warehouse
-				SET Supplier_Name = NULL
-				WHERE Id_Good_Warehouse = @id
-				PRINT 'Supplier name is setted to right value'
-			END
-			IF (@GD_Name IS NOT NULL AND @GD_Name != (SELECT GD_Name FROM dbo.GoodDetail WHERE @id_GD = Id_GD)) 
-			BEGIN 
-				UPDATE dbo.Good_Warehouse
-				SET GD_Name = NULL
-				WHERE Id_Good_Warehouse = @id
-				PRINT 'Good name is setted to right value'
-			END
 			IF (@id_GD IS NOT NULL)
 			BEGIN 
 				UPDATE dbo.Good_Warehouse
@@ -154,14 +125,6 @@ BEGIN
         END
 		ELSE 
 		BEGIN 
-			IF (@GD_Name IS NOT NULL AND @GD_Name != (SELECT GD_Name FROM dbo.GoodDetail WHERE @id_GD = Id_GD)) 
-			BEGIN 
-				UPDATE dbo.Good_Cart
-				SET GD_Name = NULL
-				WHERE @id = Id_Good_Cart
-
-				PRINT 'Supplier name is setted to right value'
-			END 
 			IF (@id_GD IS NOT NULL)
 			BEGIN 
 
@@ -186,7 +149,7 @@ BEGIN
 	DECLARE @GD_Name NVARCHAR(255)
     DECLARE @id_GD INT
     DECLARE @id_invoice INT 
-	DECLARE cursorTriggerGoodInvoice CURSOR FOR SELECT DISTINCT Inserted.Id_Invoice, Inserted.Id_GD, Inserted.GD_Name, Inserted.Supplier_Name FROM Inserted
+	DECLARE cursorTriggerGoodInvoice CURSOR FOR SELECT Inserted.Id_Invoice, Inserted.Id_GD, Inserted.GD_Name, Inserted.Supplier_Name FROM Inserted
 	OPEN cursorTriggerGoodInvoice
 	FETCH NEXT FROM cursorTriggerGoodInvoice INTO @id_invoice, @id_GD, @GD_Name, @supplier_name
 	WHILE @@FETCH_STATUS = 0
@@ -213,39 +176,19 @@ BEGIN
 
 			UPDATE dbo.Good_Invoice
 			SET GD_Name = (SELECT GD_Name FROM dbo.GoodDetail WHERE @id_GD = Id_GD)
-			WHERE Good_Invoice.Id_GD = @id_GD AND Good_Invoice.GD_Name IS NULL
+			WHERE Good_Invoice.Id_GD = @id_GD AND Id_Invoice = @id_invoice
 
 
 			UPDATE dbo.Good_Invoice
 			SET Supplier_Name = (SELECT Supplier_Name FROM dbo.GoodDetail WHERE @id_invoice = Id_GD)
-			WHERE Good_Invoice.Id_GD = @id_GD AND Good_Invoice.Supplier_Name IS NULL
+			WHERE Good_Invoice.Id_GD = @id_GD AND Id_Invoice = @id_invoice
 		END 
 		FETCH NEXT FROM cursorTriggerGoodInvoice INTO @id_invoice, @id_GD, @GD_Name, @supplier_name
     END
 	CLOSE cursorTriggerGoodInvoice
 	DEALLOCATE cursorTriggerGoodInvoice
 END
-INSERT INTO dbo.Invoice
-(
-    Invoice_InvoiceDate,
-    Invoice_TotalPrice,
-    Id_StatusInvoice,
-    Id_ShipVoucher,
-    Id_ProductVoucher,
-    Id_TP,
-    Id_DI,
-    Id_Customer
-)
-VALUES
-(   GETDATE(), -- Invoice_InvoiceDate - datetime
-    0,      -- Invoice_TotalPrice - money
-    1,         -- Id_StatusInvoice - int
-    NULL,         -- Id_ShipVoucher - int
-    NULL,         -- Id_ProductVoucher - int
-    NULL,         -- Id_TP - int
-    NULL,         -- Id_DI - int
-    1          -- Id_Customer - int
-    )
+
 --trigger good delivery
 DROP TRIGGER IF EXISTS Trigger_Insert_GoodDelivery
 GO 
@@ -320,34 +263,6 @@ BEGIN
 
 	WHILE @@FETCH_STATUS = 0
 	BEGIN
-
-		IF ((SELECT ProvinceId FROM dbo.District WHERE Id =@DI_District_Id) != @DI_Province_Id) 
-		BEGIN
-			PRINT 'Wrong district input'
-			ROLLBACK TRAN
-        END
-
-		IF ((SELECT DistrictID FROM dbo.Ward WHERE Id =@DI_Ward_Id) != @DI_District_Id) 
-		BEGIN
-			PRINT 'Wrong ward input'
-			ROLLBACK TRAN
-        END
-
-		IF (@DI_Ward_Name IS NOT NULL AND @DI_Ward_Name != (SELECT Name FROM dbo.Ward WHERE @DI_Ward_Id = Id)) 
-		BEGIN 
-			PRINT 'Ward is setted to right value'
-		END 
-
-		IF (@DI_Province_Name IS NOT NULL AND @DI_Province_Name != (SELECT Name FROM dbo.Province WHERE @DI_Province_Id = Id)) 
-		BEGIN 
-			PRINT 'Province is setted to right value'
-		END 
-
-		IF (@DI_District_Name IS NOT NULL AND @DI_District_Name != (SELECT Name FROM dbo.District WHERE @DI_District_Id = Id)) 
-		BEGIN 
-			PRINT 'District is setted to right value'
-		END 
-
 		IF (@DI_Ward_Id IS NOT NULL)
 		BEGIN 
 
@@ -377,7 +292,7 @@ BEGIN
 	DEALLOCATE cursorTriggerDeliveryInfo
 END
 
-
+--TRIGGER RATE INSERT
 DROP TRIGGER IF EXISTS Trigger_Rate_insert
 GO 
 create trigger Trigger_Rate_insert on dbo.Customer_Rate_Good
@@ -417,6 +332,7 @@ BEGIN TRAN
 COMMIT
 
 
+--TRIGGER RATE DELETE
 DROP TRIGGER IF EXISTS Trigger_Rate_Delete
 GO 
 create trigger Trigger_Rate_Delete on dbo.Customer_Rate_Good

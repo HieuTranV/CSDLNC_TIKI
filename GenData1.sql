@@ -46,22 +46,7 @@ INSERT INTO dbo.PersonalVoucher
 VALUES
 (5,2), (6,2), (7,1), (8,2), (9,3), (10, 1)
 
-INSERT dbo.Customer_PublicVoucher
-(
-    Id_Customer,
-    Id_PublicVoucher
-)
-VALUES
-(1, 2), (2, 2), (1,1)
 
-INSERT INTO dbo.Customer_PersonalVoucher
-(
-    Id_Customer,
-    Id_PersonalVoucher,
-    Voucher_Remain
-)
-VALUES
-(1,6,2), (2, 6, 2), (3,7, 1)
 
 INSERT INTO dbo.TypePay
 (
@@ -15317,3 +15302,20 @@ BEGIN
 END
 GO
 EXEC GenPriceShip
+
+INSERT dbo.Customer_PublicVoucher
+(
+    Id_Customer,
+    Id_PublicVoucher
+)
+VALUES
+(1, 2), (2, 2), (1,1)
+
+INSERT INTO dbo.Customer_PersonalVoucher
+(
+    Id_Customer,
+    Id_PersonalVoucher,
+    Voucher_Remain
+)
+VALUES
+(1,6,2), (2, 6, 2), (3,7, 1)

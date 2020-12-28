@@ -154,7 +154,7 @@ CREATE TABLE DeliveryInformation(
 	Id_Customer INT,
 	DI_PhoneNumber VARCHAR(11),
 	DI_Name NVARCHAR(30),
-	DI_Address NVARCHAR(30),
+	DI_Address NVARCHAR(100),
 	DI_Ward_Id INT,
 	DI_Province_Id INT,
 	DI_District_Id INT,
@@ -496,4 +496,3 @@ GO
 EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Kinh độ, vĩ độ' , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'District', @level2type=N'COLUMN',@level2name=N'LatiLongTude'
 GO	
 
-z
