@@ -356,3 +356,55 @@ BEGIN TRAN
 	SET Number_Rating = Number_Rating - 1
 	WHERE @id_GD = Id_GD
 COMMIT
+
+
+DROP TRIGGER IF EXISTS Trigger_Insert_Invoice
+go
+CREATE trigger Trigger_Insert_Invoice on dbo.Invoice
+FOR INSERT, UPDATE 
+AS
+BEGIN
+	DECLARE @id_ship_voucher int
+	DECLARE @id_invoice_voucher INT
+	DECLARE @id_customer int
+	DECLARE cur CURSOR FOR SELECT Inserted.Id_ShipVoucher, Inserted.Id_ProductVoucher, Inserted.Id_Customer FROM Inserted
+	OPEN cur
+	FETCH NEXT FROM cur INTO @id_ship_voucher, @id_invoice_voucher, @id_customer
+	WHILE @@FETCH_STATUS = 0
+	BEGIN
+		IF @id_invoice_voucher IS NOT NULL AND  EXISTS( SELECT * FROM dbo.PublicVoucher WHERE @id_invoice_voucher = Id_PublicVoucher)
+		BEGIN
+			UPDATE dbo.PublicVoucher
+			SET  Voucher_Remain = Voucher_Remain - 1
+			WHERE Id_PublicVoucher = @id_invoice_voucher
+			INSERT INTO customer_publicVoucher
+			VALUES (@id_customer, @id_invoice_voucher)
+        END
+		ELSE
+        BEGIN
+			UPDATE dbo.Customer_PersonalVoucher
+			SET Voucher_Remain = Voucher_Remain - 1
+            WHERE Id_Customer = @id_customer AND Id_PersonalVoucher = @id_invoice_voucher
+        END
+        
+		IF  @id_ship_voucher IS NOT NULL AND EXISTS( SELECT * FROM dbo.PublicVoucher WHERE @id_ship_voucher = Id_PublicVoucher)
+		BEGIN
+			UPDATE dbo.PublicVoucher
+			SET  Voucher_Remain = Voucher_Remain - 1
+			WHERE Id_PublicVoucher = @id_ship_voucher
+
+			INSERT INTO customer_publicVoucher
+			VALUES (@id_customer,@id_ship_voucher)
+        END
+		ELSE
+        BEGIN
+			UPDATE dbo.Customer_PersonalVoucher
+			SET Voucher_Remain = Voucher_Remain - 1
+            WHERE Id_Customer = @id_customer AND Id_PersonalVoucher = @id_ship_voucher
+        END
+        FETCH NEXT FROM cur INTO @id_ship_voucher, @id_invoice_voucher, @id_customer
+	END
+    CLOSE cur
+	DEALLOCATE cur
+END
+
